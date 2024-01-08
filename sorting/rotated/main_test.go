@@ -12,7 +12,9 @@ func Test_search(t *testing.T) {
 		args args
 		want int
 	}{
-		{name: "", args: args{nums: []int{4, 5, 6, 7, 0, 1, 2}, target: 0}, want: 4},
+		{name: "Rotated", args: args{nums: []int{4, 5, 6, 7, 0, 1, 2}, target: 0}, want: 4},
+		{name: "Nonexistent", args: args{nums: []int{4, 5, 6, 7, 0, 1, 2}, target: 3}, want: -1},
+		{name: "Single", args: args{nums: []int{1}, target: 0}, want: -1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
