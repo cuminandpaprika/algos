@@ -1,70 +1,75 @@
 package lru
 
 type LRUCache struct {
-	size      int
-	filled    int
-	nextEvict *Node
-	newest    *Node
-	store     map[int]int
+	size  int
+	tail  *Node
+	head  *Node
+	store map[int]Node
 }
 
 type Node struct {
-	child *Node
-	key   int
+	parent *Node
+	child  *Node
+	key    int
+	value  int
 }
 
 func Constructor(capacity int) LRUCache {
 	return LRUCache{
 		size:  capacity,
-		store: make(map[int]int, capacity),
+		store: make(map[int]Node, capacity),
 	}
 }
 
 func (this *LRUCache) Get(key int) int {
-	if val, ok := this.store[key]; !ok {
+	if record, ok := this.store[key]; !ok {
 		return -1
 	} else {
 		// Update recency
-		this.push(key)
-		return val
+		this.moveToFront(key)
+		return record.value
 	}
 }
 
 func (this *LRUCache) Put(key int, value int) {
+	newNode := Node{
+		key:   key,
+		value: value,
+		child: this.head,
+	}
+
+	// Add if it doesn't exist
 	if _, ok := this.store[key]; !ok {
-		this.store[key] = value
+		this.store[key] = newNode
+		this.head.parent = &newNode
+		this.head = &newNode
 	} else {
 		// Update recency
-		this.push(key)
-		this.filled++
-		this.store[key] = value
+		this.store[key] = newNode
+		this.head = &newNode
 	}
-	if this.filled > this.size {
+
+	// Trim
+	if len(this.store) > this.size {
 		this.evict()
 	}
 }
 
 func (this *LRUCache) evict() {
-	if _, ok := this.store[this.nextEvict.key]; !ok {
-		this.nextEvict = this.nextEvict.child
-		this.evict()
-	} else {
-		delete(this.store, this.nextEvict.key)
-		this.nextEvict = this.nextEvict.child
-	}
-
+	delete(this.store, this.tail.key)
+	this.tail.child = nil
+	this.tail = this.tail.parent
 }
 
-func (this *LRUCache) push(key int) {
-	latest := &Node{
-		key: key,
-	}
-
-	if this.newest != nil {
-		this.newest.child = latest
-	}
-
-	this.newest = latest
+// Reoder Linked List
+func (this *LRUCache) moveToFront(key int) {
+	updatedNode := this.store[key]
+	// Remove from list
+	updatedNode.child.parent = updatedNode.parent
+	updatedNode.parent.child = updatedNode.child
+	// Attach to head
+	updatedNode.child = this.head
+	this.head = &updatedNode
 }
 
 /**
