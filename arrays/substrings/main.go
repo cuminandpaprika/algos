@@ -5,32 +5,23 @@ package substrings
 func LengthLongestSubstringWithoutRepeating(s string) int {
 	longestWindow := 0
 	startIndex := 0
-	endIndex := 0
-	seenChars := map[rune]struct{}{}
+	seenChars := map[rune]int{}
 
-	if len(s) == 0 {
-		return 0
-	}
 	// dvdf
 	for i, char := range s {
-		if _, ok := seenChars[char]; ok {
-			// Reset window
-			startIndex = i
-			endIndex = i
-			seenChars = map[rune]struct{}{}
-		} else {
-			// Increment window size
-			endIndex = i
-
-			// Update longest window
-			if endIndex-startIndex > longestWindow {
-				longestWindow = endIndex - startIndex
-			}
+		if position := seenChars[char]; position > startIndex {
+			// Shift the left side of the window
+			startIndex = position
 		}
-		// Add seen rune to map
-		seenChars[char] = struct{}{}
+
+		// Keep track of where we need to seek to, to remove the duplicate
+		seenChars[char] = i + 1
+
+		if currentWindow := i - startIndex + 1; currentWindow > longestWindow {
+			longestWindow = currentWindow
+		}
 
 	}
 
-	return longestWindow + 1
+	return longestWindow
 }
