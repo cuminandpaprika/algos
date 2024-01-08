@@ -22,18 +22,66 @@ package minimum_subarray
 // 1 <= nums.length <= 10^5
 // 1 <= nums[i] <= 10^4
 
+// [1,2,3,4]
+// [1,3,6,10]
+// From 1 to 3 is 10-1
+// From 2 to 3 is 10-3
+
 // Questions
 // Is the input always positive?
 // Is the input ever overflow?
 //
 
-func MinimumSubArray(inputs []int, target int) int {
-	result := 0
-	left := 0
-
-	for i, input := range inputs {
-
+func MinimumSubArray(nums []int, target int) int {
+	if len(nums) == 0 {
+		return 0
 	}
 
-	return result
+	// Impossible to reach number
+	smallestWindowSize := len(nums) + 2
+
+	sum := make([]int, len(nums))
+
+	for i, input := range nums {
+		if i == 0 {
+			sum[i] = input
+		} else {
+			// Subtract left items
+			sum[i] = sum[i-1] + input
+		}
+
+		for left := 0; left <= i; left++ {
+			currentSum := 0
+			currentSumSize := 0
+			// Window of size 1
+			if left == i {
+				currentSum = input
+				currentSumSize = 1
+			} else if left == 0 {
+				currentSum = sum[i]
+				currentSumSize = i + 1
+			} else {
+				// All other cases
+				currentSum = sum[i] - sum[left]
+				currentSumSize = i - left
+			}
+
+			if currentSum >= target {
+				// Record only if larger
+				if smallestWindowSize > currentSumSize {
+					smallestWindowSize = currentSumSize
+				}
+			} else {
+				// No point making window smaller
+				break
+			}
+
+		}
+	}
+
+	if smallestWindowSize == len(nums)+2 {
+		return 0
+	}
+
+	return smallestWindowSize
 }
